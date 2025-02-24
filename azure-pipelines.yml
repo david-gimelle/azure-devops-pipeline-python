@@ -1,0 +1,46 @@
+trigger:
+  - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  PYTHON_VERSION: '3.9'
+  POETRY_VERSION: '1.1.11'
+  IMAGE_NAME: 'python-demo-api'
+  REGISTRY: 'ghcr.io'
+  REPOSITORY: 'david-gimelle/azure-devops-pipeline-python'
+  WORKING_DIR: '$(System.DefaultWorkingDirectory)'
+
+stages:
+- stage: Build
+  jobs:
+  - job: BuildAndTest
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '$(PYTHON_VERSION)'
+        addToPath: true
+      displayName: 'Set up Python'
+        
+    - script: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "##vso[task.setvariable variable=PATH]$HOME/.local/bin:$PATH"
+      workingDirectory: $(WORKING_DIR)
+      displayName: 'Install Poetry'
+      
+    - script: |
+        poetry install --no-root
+      workingDirectory: $(WORKING_DIR)
+      displayName: 'Install dependencies'
+
+    - script: |
+        python install-build.py --skip-install-poetry
+      workingDirectory: $(WORKING_DIR)
+      displayName: 'Build Docker image'
+      
+    - script: |
+        poetry run pytest
+      workingDirectory: $(WORKING_DIR)
+      displayName: 'Run tests'
+      

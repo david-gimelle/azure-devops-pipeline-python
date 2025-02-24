@@ -1,5 +1,3 @@
-from flask import Flask
+from app.routes import app
 
-app = Flask(__name__)
-
-from app import routes
+__all__ = ['app']

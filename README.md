@@ -1,11 +1,11 @@
 # Python Demo Application
 
-Simple example of a Python/Flask/Poetry demo Api Application
+Simple example of a Python/FastAPI/Poetry demo Api Application
 
 # Requirements for this app
 - Python 3
 - Poetry 1.1.11
-- Flask
+- FastAPI 
 
 # Setup the application localy
 

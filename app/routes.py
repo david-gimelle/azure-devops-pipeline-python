@@ -1,14 +1,16 @@
-from app import app
-from flask import jsonify
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 
-@app.route('/ping', methods=['GET'])
-def pinging():
-    return jsonify({"message": "pong"}), 200
+app = FastAPI()
 
-@app.route('/demo', methods=['GET'])
-def get_demo():
-    return jsonify({"message": "demo"}), 200
+@app.get("/ping")
+async def pinging():
+    return JSONResponse(content={"message": "pong"}, status_code=200)
 
-@app.route('/health', methods=['GET'])
-def health():
-    return jsonify({"status": "healthy"}), 200
+@app.get("/demo")
+async def get_demo():
+    return JSONResponse(content={"message": "demo"}, status_code=200)
+
+@app.get("/health")
+async def health():
+    return JSONResponse(content={"status": "healthy"}, status_code=200)

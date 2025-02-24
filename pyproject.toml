@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "python-boardgames-api"
+name = "python-demo-api"
 version = "0.1.0"
-description = "A Python/Flask demo api providing a list of boardgames"
+description = "A Python/Flask demo api providing"
 authors = ["david-gimelle"]
 license = "MIT"
 readme = "README.md"

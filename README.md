@@ -1,6 +1,6 @@
-# Python Boardgames Lists Demo Application
+# Python Demo Application
 
-Simple example of a Python/Flask/Poetry Api Application providing a list of boardgames with a GET endpoint
+Simple example of a Python/Flask/Poetry demo Api Application
 
 # Requirements for this app
 - Python 3
@@ -37,7 +37,7 @@ Run the Application localy with this command and check the url returned
 
 Ping the app on http://127.0.0.1:5001/ping
 
-Check the list of boardgames on http://127.0.0.1:5001/boardgames
+Demo on http://127.0.0.1:5001/demo
 
 # Run the unit tests
 
@@ -51,11 +51,13 @@ This is configurable from the file config.py
 # Images
 
 you can build one localy with this command
-> docker build -t python-boardgames-api .
-> docker build --no-cache --progress=plain -t python-boardgames-api .
+> docker build -t python-demo-api .
+> docker build --no-cache --progress=plain -t python-demo-api .
 
 You build an image with this script
 > python install-build.py
 > python install-build.py --skip-install-poetry --skip-tests
 
-
+Run the image with this command
+> docker run -p 5001:5001 python-demo-api
+`

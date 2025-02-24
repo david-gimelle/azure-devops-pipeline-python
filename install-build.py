@@ -51,7 +51,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     poetry_version = "1.1.11"  # Specify the desired Poetry version here
-    docker_image_name = "python-boardgames-api"  # Specify the desired Docker image name here
+    docker_image_name = "python-demo-api"  # Specify the desired Docker image name here
 
     if not args.skip_install_poetry:
         install_poetry(poetry_version)

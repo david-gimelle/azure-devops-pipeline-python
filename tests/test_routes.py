@@ -12,10 +12,7 @@ def test_ping(client):
     assert response.status_code == 200
     assert response.json == {"message": "pong"}
 
-def test_get_boardgames(client):
-    response = client.get('/boardgames')
+def test_demo(client):
+    response = client.get('/demo')
     assert response.status_code == 200
-    assert response.json == [
-        { "name": "Small World", "origin": "Python App", "played": False },
-        { "name": "Le Havre", "origin": "Python App", "played": False }
-    ]
+    assert response.json == {"message": "demo"}

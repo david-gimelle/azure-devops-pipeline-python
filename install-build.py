@@ -44,6 +44,7 @@ def build_docker_image(image_name):
     run_command(f"docker build --progress=plain -t {image_name} .")
 
 if __name__ == "__main__":
+    print("Starting install-build script...")
     parser = argparse.ArgumentParser(description="Install poetry, run test and Build Docker image")
     parser.add_argument("--skip-tests", action="store_true", help="Skip running tests")
     parser.add_argument("--skip-install-poetry", action="store_true", help="Skip installing Poetry")

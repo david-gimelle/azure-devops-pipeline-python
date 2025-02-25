@@ -1,9 +1,12 @@
+# Manual and branch triggers
 trigger:
   - main
 
+# Use Ubuntu latest image
 pool:
   vmImage: 'ubuntu-latest'
 
+# Define variables
 variables:
   PYTHON_VERSION: '3.9'
   POETRY_VERSION: '1.1.11'
@@ -12,6 +15,7 @@ variables:
   REPOSITORY: 'david-gimelle/azure-devops-pipeline-python'
   WORKING_DIR: '$(System.DefaultWorkingDirectory)'
 
+# Define pipeline stages
 stages:
 - stage: Build
   jobs:
@@ -44,3 +48,14 @@ stages:
       workingDirectory: $(WORKING_DIR)
       displayName: 'Run tests'
       
+    # Push to GitHub Container Registry
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'github-container-registry'
+        repository: '$(REPOSITORY)/$(IMAGE_NAME)'
+        command: 'buildAndPush'
+        Dockerfile: '**/Dockerfile'
+        tags: |
+          $(Build.BuildId)
+          latest
+      displayName: 'Push Docker image'

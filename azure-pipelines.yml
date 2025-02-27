@@ -4,58 +4,110 @@ trigger:
 
 # Use Ubuntu latest image
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: "ubuntu-latest"
 
 # Define variables
 variables:
-  PYTHON_VERSION: '3.9'
-  POETRY_VERSION: '1.1.11'
-  IMAGE_NAME: 'python-demo-api'
-  REGISTRY: 'ghcr.io'
-  REPOSITORY: 'david-gimelle/azure-devops-pipeline-python'
-  WORKING_DIR: '$(System.DefaultWorkingDirectory)'
+  PYTHON_VERSION: "3.9"
+  POETRY_VERSION: "1.1.11"
+  IMAGE_NAME: "python-demo-api"
+  REGISTRY: "ghcr.io"
+  REPOSITORY: "david-gimelle/azure-devops-pipeline-python"
+  WORKING_DIR: "$(System.DefaultWorkingDirectory)"
+  TERRAFORM_VERSION: "1.5.7"
+  TERRAFORM_DIR: "$(System.DefaultWorkingDirectory)/terraform"
 
 # Define pipeline stages
 stages:
-- stage: Build
-  jobs:
-  - job: BuildAndTest
-    steps:
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '$(PYTHON_VERSION)'
-        addToPath: true
-      displayName: 'Set up Python'
-        
-    - script: |
-        curl -sSL https://install.python-poetry.org | python3 -
-        echo "##vso[task.setvariable variable=PATH]$HOME/.local/bin:$PATH"
-      workingDirectory: $(WORKING_DIR)
-      displayName: 'Install Poetry'
-      
-    - script: |
-        poetry install --no-root
-      workingDirectory: $(WORKING_DIR)
-      displayName: 'Install dependencies'
+  - stage: Build
+    jobs:
+      - job: BuildAndTest
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: "$(PYTHON_VERSION)"
+              addToPath: true
+            displayName: "Set up Python"
 
-    - script: |
-        python install-build.py --skip-install-poetry
-      workingDirectory: $(WORKING_DIR)
-      displayName: 'Build Docker image'
-      
-    - script: |
-        poetry run pytest
-      workingDirectory: $(WORKING_DIR)
-      displayName: 'Run tests'
-      
-    # Push to GitHub Container Registry
-    - task: Docker@2
-      inputs:
-        containerRegistry: 'github-container-registry'
-        repository: '$(REPOSITORY)/$(IMAGE_NAME)'
-        command: 'buildAndPush'
-        Dockerfile: '**/Dockerfile'
-        tags: |
-          $(Build.BuildId)
-          latest
-      displayName: 'Push Docker image'
+          - script: |
+              curl -sSL https://install.python-poetry.org | python3 -
+              echo "##vso[task.setvariable variable=PATH]$HOME/.local/bin:$PATH"
+            workingDirectory: $(WORKING_DIR)
+            displayName: "Install Poetry"
+
+          - script: |
+              poetry install --no-root
+            workingDirectory: $(WORKING_DIR)
+            displayName: "Install dependencies"
+
+          - script: |
+              python install-build.py --skip-install-poetry
+            workingDirectory: $(WORKING_DIR)
+            displayName: "Build Docker image"
+
+          - script: |
+              poetry run pytest
+            workingDirectory: $(WORKING_DIR)
+            displayName: "Run tests"
+
+          # Push to GitHub Container Registry
+          - task: Docker@2
+            inputs:
+              containerRegistry: "github-container-registry"
+              repository: "$(REPOSITORY)/$(IMAGE_NAME)"
+              command: "buildAndPush"
+              Dockerfile: "**/Dockerfile"
+              tags: |
+                $(Build.BuildId)
+                latest
+            displayName: "Push Docker image"
+
+  - stage: Infrastructure
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+      - job: TerraformDeploy
+        steps:
+          - task: TerraformInstaller@0
+            inputs:
+              terraformVersion: "$(TERRAFORM_VERSION)"
+            displayName: "Install Terraform"
+
+          - task: TerraformTaskV4@4
+            inputs:
+              provider: "azurerm"
+              command: "init"
+              workingDirectory: "$(TERRAFORM_DIR)"
+              backendType: "azurerm"
+              backendServiceArm: "azure-service-connection"
+              backendAzureRmResourceGroupName: "adodemo"
+              backendAzureRmStorageAccountName: "adodemoterraform"
+              backendAzureRmContainerName: "tfstate"
+              backendAzureRmKey: "terraform/python-demo-api/state/dev.tfstate"
+            displayName: "Terraform Init"
+
+          - task: TerraformTaskV4@4
+            inputs:
+              provider: "azurerm"
+              command: "validate"
+              workingDirectory: "$(TERRAFORM_DIR)"
+            displayName: "Terraform Validate"
+
+          - task: TerraformTaskV4@4
+            inputs:
+              provider: "azurerm"
+              command: "plan"
+              workingDirectory: "$(TERRAFORM_DIR)"
+              environmentServiceNameAzureRM: "azure-service-connection"
+              commandOptions: "-var='client_id=$(ARM_CLIENT_ID)' -var='client_secret=$(ARM_CLIENT_SECRET)' -var='tenant_id=$(ARM_TENANT_ID)' -var='subscription_id=$(ARM_SUBSCRIPTION_ID)'"
+            displayName: "Terraform Plan"
+
+          - task: TerraformTaskV4@4
+            inputs:
+              provider: "azurerm"
+              command: "apply"
+              workingDirectory: "$(TERRAFORM_DIR)"
+              environmentServiceNameAzureRM: "azure-service-connection"
+              commandOptions: "-auto-approve -var='client_id=$(ARM_CLIENT_ID)' -var='client_secret=$(ARM_CLIENT_SECRET)' -var='tenant_id=$(ARM_TENANT_ID)' -var='subscription_id=$(ARM_SUBSCRIPTION_ID)'"
+            displayName: "Terraform Apply"
+            condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))

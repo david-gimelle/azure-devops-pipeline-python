@@ -6,10 +6,10 @@ terraform {
     }
   }
   backend "azurerm" {
-    resource_group_name  = "momorepo1"
-    storage_account_name = "monorepoterraform"
-    container_name      = "tfstate2"
-    key                 = "terraform/react/state/dev.tfstate"
+    resource_group_name  = "adodemo"
+    storage_account_name = "adodemoterraform"
+    container_name      = "tfstate"
+    key                 = "terraform/python-demo-api/state/dev.tfstate"
   }
 }
 
@@ -24,7 +24,7 @@ provider "azurerm" {
 }
 
 module "aks_cluster" {
-  source = "../../../modules/aks-cluster"
+  source = "./modules/aks-cluster"
 
   cluster_name         = var.cluster_name
   location            = var.location

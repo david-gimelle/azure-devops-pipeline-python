@@ -99,15 +99,15 @@ stages:
               command: "plan"
               workingDirectory: "$(TERRAFORM_DIR)"
               environmentServiceNameAzureRM: "azure-service-connection"
-              commandOptions: "-var='client_id=$(ARM_CLIENT_ID)' -var='client_secret=$(ARM_CLIENT_SECRET)' -var='tenant_id=$(ARM_TENANT_ID)' -var='subscription_id=$(ARM_SUBSCRIPTION_ID)'"
+              commandOptions: "-var=client_id=$(ARM_CLIENT_ID) -var=client_secret=$(ARM_CLIENT_SECRET) -var=tenant_id=$(ARM_TENANT_ID) -var=subscription_id=$(ARM_SUBSCRIPTION_ID)"
             displayName: "Terraform Plan"
-
+          
           - task: TerraformTaskV4@4
             inputs:
               provider: "azurerm"
               command: "apply"
               workingDirectory: "$(TERRAFORM_DIR)"
               environmentServiceNameAzureRM: "azure-service-connection"
-              commandOptions: "-auto-approve -var='client_id=$(ARM_CLIENT_ID)' -var='client_secret=$(ARM_CLIENT_SECRET)' -var='tenant_id=$(ARM_TENANT_ID)' -var='subscription_id=$(ARM_SUBSCRIPTION_ID)'"
+              commandOptions: "-auto-approve -var=client_id=$(ARM_CLIENT_ID) -var=client_secret=$(ARM_CLIENT_SECRET) -var=tenant_id=$(ARM_TENANT_ID) -var=subscription_id=$(ARM_SUBSCRIPTION_ID)"
             displayName: "Terraform Apply"
             condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))

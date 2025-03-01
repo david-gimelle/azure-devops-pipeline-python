@@ -86,26 +86,9 @@ stages:
               backendServiceArm: "azure-service-connection"
               backendAzureRmResourceGroupName: "adodemo"
               backendAzureRmStorageAccountName: "adodemoterraform"
-              backendAzureRmContainerName: "tfstate"
+              backendAzureRmContainerName: "tfstate2"
               backendAzureRmKey: "terraform/python-demo-api/state/dev.tfstate"
             displayName: "Terraform Init"
-
-            # Add this step to remove lock before Terraform Init
-          - task: AzureCLI@2
-            inputs:
-              azureSubscription: "azure-service-connection"
-              scriptType: "bash"
-              scriptLocation: "inlineScript"
-              inlineScript: |
-                echo "Removing Terraform lock if it exists..."
-                az storage blob delete \
-                --container-name tfstate \
-                --name "terraform/python-demo-api/state/dev.tfstate.3e107baf-296e-f407-0a0b-bb6bf575e2f0.lock" \
-                --account-name adodemoterraform \
-                --auth-mode login \
-                --only-show-errors || echo "Lock file doesn't exist or couldn't be removed"
-            displayName: "Remove Terraform Lock"
-            continueOnError: true
 
           - task: TerraformTaskV4@4
             inputs:

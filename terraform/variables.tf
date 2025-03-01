@@ -25,7 +25,7 @@ variable "subscription_id" {
 variable "cluster_name" {
   description = "Name of the AKS cluster"
   type        = string
-  default     = "python-demo-api-cluster"
+  default     = "python-demo-app-cluster"
 }
 
 variable "location" {

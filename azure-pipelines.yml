@@ -82,7 +82,7 @@ stages:
               backendServiceArm: "azure-service-connection"
               backendAzureRmResourceGroupName: "adodemo"
               backendAzureRmStorageAccountName: "adodemoterraform"
-              backendAzureRmContainerName: "tfstate2"
+              backendAzureRmContainerName: "terraState"
               backendAzureRmKey: "terraform/python-demo-api/state/dev.tfstate"
             displayName: "Terraform Init"
 

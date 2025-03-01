@@ -8,7 +8,7 @@ terraform {
   backend "azurerm" {
     resource_group_name  = "adodemo"
     storage_account_name = "adodemoterraform"
-    container_name      = "terraState"
+    container_name      = "terrastate"
     key                 = "terraform/python-demo-api/state/dev.tfstate"
   }
 }

@@ -25,14 +25,17 @@ variable "subscription_id" {
 variable "cluster_name" {
   description = "Name of the AKS cluster"
   type        = string
+  default     = "python-demo-app-cluster"
 }
 
 variable "location" {
   description = "Azure region where resources will be created"
   type        = string
+  default     = "eastus"
 }
 
 variable "resource_group_name" {
   description = "Name of the resource group"
   type        = string
+  default     = "adodemo"
 }

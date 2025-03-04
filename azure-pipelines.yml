@@ -124,3 +124,64 @@ stages:
               # as they're already defined as pipeline variables and automatically available to tasks
             displayName: "Terraform Apply"
             condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+
+  # New deployment stage
+  - stage: Deploy
+    dependsOn: Infrastructure
+    condition: succeeded()
+    jobs:
+      - job: DeployToAKS
+        steps:
+          # Get AKS credentials
+          - task: AzureCLI@2
+            inputs:
+              azureSubscription: "azure-service-connection"
+              scriptType: "bash"
+              scriptLocation: "inlineScript"
+              inlineScript: |
+                # Get AKS credentials
+                az aks get-credentials \
+                  --resource-group adodemo \
+                  --name python-demo-app-cluster \
+                  --overwrite-existing
+              displayName: "Get AKS Credentials"
+
+          # Replace the image tag in the Kubernetes manifest
+          - task: Bash@3
+            inputs:
+              targetType: "inline"
+              script: |
+                # Replace placeholder with actual build ID
+                sed -i 's/:placeholder/:$(Build.BuildId)/g' $(WORKING_DIR)/k8s/python-demo-api.yml
+              displayName: "Update Image Tag"
+
+          # Install kubectl
+          - task: KubectlInstaller@0
+            inputs:
+              kubectlVersion: "latest"
+            displayName: "Install kubectl"
+
+          # Create a secret for GitHub Container Registry
+          - task: Kubernetes@1
+            inputs:
+              connectionType: "None"
+              command: "create"
+              arguments: "secret docker-registry ghcr-secret --docker-server=$(REGISTRY) --docker-username=$(GHCR_USERNAME) --docker-password=$(GHCR_PAT) --docker-email=$(GHCR_EMAIL) -n python-demo-api --dry-run=client -o yaml | kubectl apply -f -"
+            displayName: "Create Pull Secret"
+
+          # Deploy the application
+          - task: Kubernetes@1
+            inputs:
+              connectionType: "None"
+              command: "apply"
+              useConfigurationFile: true
+              configuration: "$(WORKING_DIR)/k8s/python-demo-api.yml"
+            displayName: "Deploy to AKS"
+
+          # Verify deployment
+          - task: Kubernetes@1
+            inputs:
+              connectionType: "None"
+              command: "get"
+              arguments: "pods,svc -n python-demo-api"
+            displayName: "Verify Deployment"

@@ -60,4 +60,42 @@ You build an image with this script
 
 Run the image with this command
 > docker run -p 5001:5001 python-demo-api
-`
+
+# Deployment to Azure Kubernetes Service (AKS)
+
+This application is deployed to Azure Kubernetes Service (AKS) using Azure DevOps Pipelines.
+
+## CI/CD Pipeline Overview
+
+The deployment process consists of the following stages:
+
+1. **Build Stage**
+   - Sets up Python and Poetry
+   - Installs dependencies
+   - Builds and tests the application
+   - Creates and pushes a Docker image to GitHub Container Registry
+
+2. **Infrastructure Stage**
+   - Deploys or updates the AKS cluster using Terraform
+   - Configures network and security settings
+
+3. **Deploy Stage**
+   - Retrieves AKS credentials
+   - Updates the Kubernetes manifest with the current image tag
+   - Creates necessary Kubernetes secrets for image pulling
+   - Deploys the application to AKS
+   - Verifies the deployment
+
+## Prerequisites for Deployment
+
+- Azure DevOps project with a service connection to Azure
+- GitHub Container Registry credentials stored as pipeline variables
+- Terraform state storage in Azure Blob Storage
+
+## Kubernetes Resources
+
+The application is deployed with the following Kubernetes resources:
+- Deployment with the container image
+- Service to expose the application
+- ConfigMap for application configuration
+- Secret for container registry authentication

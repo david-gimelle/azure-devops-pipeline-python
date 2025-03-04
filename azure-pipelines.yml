@@ -16,6 +16,7 @@ variables:
   WORKING_DIR: "$(System.DefaultWorkingDirectory)"
   TERRAFORM_VERSION: "1.5.7"
   TERRAFORM_DIR: "$(System.DefaultWorkingDirectory)/terraform"
+  GHCR_USERNAME: "david-gimelle"
 
 # Define pipeline stages
 stages:
@@ -161,12 +162,22 @@ stages:
               kubectlVersion: "latest"
             displayName: "Install kubectl"
 
-          # Create a secret for GitHub Container Registry
-          - task: Kubernetes@1
+          # Create a secret for GitHub Container Registry - Fixed version
+          - task: Bash@3
             inputs:
-              connectionType: "None"
-              command: "create"
-              arguments: "secret docker-registry ghcr-secret --docker-server=$(REGISTRY) --docker-username=$(GHCR_USERNAME) --docker-password=$(GHCR_PAT) --docker-email=$(GHCR_EMAIL) -n python-demo-api --dry-run=client -o yaml | kubectl apply -f -"
+              targetType: "inline"
+              script: |
+                # Create namespace if it doesn't exist
+                kubectl create namespace python-demo-api --dry-run=client -o yaml | kubectl apply -f -
+                
+                # Create or update the docker registry secret
+                kubectl create secret docker-registry ghcr-secret \
+                  --docker-server=$(REGISTRY) \
+                  --docker-username=$(GHCR_USERNAME) \
+                  --docker-password=$(GHCR_PAT) \
+                  --docker-email=$(GHCR_EMAIL) \
+                  --namespace python-demo-api \
+                  --dry-run=client -o yaml | kubectl apply -f -
             displayName: "Create Pull Secret"
 
           # Deploy the application

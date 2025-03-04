@@ -41,27 +41,26 @@ stages:
             workingDirectory: $(WORKING_DIR)
             displayName: "Install dependencies"
 
-          #- script: |
-          #    python install-build.py --skip-install-poetry
-          #  workingDirectory: $(WORKING_DIR)
-          #  displayName: "Build Docker image"
+          - script: |
+              python install-build.py --skip-install-poetry
+            workingDirectory: $(WORKING_DIR)
+            displayName: "Build Docker image"
 
-          #- script: |
-          #    poetry run pytest
-          #  workingDirectory: $(WORKING_DIR)
-          #  displayName: "Run tests"
+          - script: |
+              poetry run pytest
+            workingDirectory: $(WORKING_DIR)
+            displayName: "Run tests"
 
-          # Push to GitHub Container Registry
-          #- task: Docker@2
-          #  inputs:
-          #    containerRegistry: "github-container-registry"
-          #    repository: "$(REPOSITORY)/$(IMAGE_NAME)"
-          #    command: "buildAndPush"
-          #    Dockerfile: "**/Dockerfile"
-          #    tags: |
-          #      $(Build.BuildId)
-          #      latest
-          #  displayName: "Push Docker image"
+          - task: Docker@2
+            inputs:
+              containerRegistry: "github-container-registry"
+              repository: "$(REPOSITORY)/$(IMAGE_NAME)"
+              command: "buildAndPush"
+              Dockerfile: "**/Dockerfile"
+              tags: |
+                $(Build.BuildId)
+                latest
+            displayName: "Push Docker image"
 
   - stage: Infrastructure
     dependsOn: Build
